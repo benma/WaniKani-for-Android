@@ -3,6 +3,9 @@ package tr.xip.wanikani;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Map;
+import java.lang.Character.UnicodeBlock;
+import com.atilika.kuromoji.jumandic.Token;
+import com.atilika.kuromoji.jumandic.Tokenizer;
 
 /*
  *  Copyright (c) 2013 Alberto Cuda
@@ -37,7 +40,6 @@ public class JapaneseIME {
             this.end = end;
             this.text = text;
         }
-
     }
 
     private Map<String, String> map;
@@ -90,15 +92,43 @@ public class JapaneseIME {
         return changed ? sb.toString () : s;
     }
 
+    private Replacement kanjiReplace(String s, int pos) {
+        int i;
+        boolean sawKanji = false;
+        for (i = pos; i > 0; i--) {
+            UnicodeBlock block = UnicodeBlock.of(s.codePointAt(i-1));
+            if (block == UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS) {
+                sawKanji = true;
+                continue;
+            }
+            if (block != UnicodeBlock.HIRAGANA && block != UnicodeBlock.KATAKANA)
+                break;
+        }
+        if (i == pos || !sawKanji)
+            return null;
+
+        StringBuffer buffer = new StringBuffer();
+        for (Token token : new Tokenizer().tokenize(s.substring(i, pos))) {
+            String lastFeature = token.getAllFeaturesArray()[5];
+            if (lastFeature == "*")
+                lastFeature = token.getSurface();
+            buffer.append(lastFeature);
+        }
+        return s.equals(buffer.toString()) ? null : new Replacement(i, pos, buffer.toString());
+    }
+
     public Replacement replace (String s, int pos)
     {
+        Replacement kanjiReplacement = kanjiReplace(s, pos);
+        if (kanjiReplacement != null)
+            return kanjiReplacement;
+
         String xlated;
         int i;
 
         for (i = pos; i > 0; i--)
             if (s.codePointAt (i - 1) >= 128)
                 break;
-
         if (i == pos)
             return null;
 

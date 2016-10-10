@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.3'
+        classpath 'com.android.tools.build:gradle:2.2.0'
     }
 }
 
@@ -28,11 +28,17 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
+        debug {
+            applicationIdSuffix ".debug"
+        }
     }
 
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/CONTRIBUTORS.md'
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/NOTICE.md'
     }
 
     sourceSets {
@@ -65,6 +71,7 @@ android {
 
     dependencies {
         // compile fileTree(dir: 'libs', include: '*.jar')
+        testCompile 'junit:junit:4.12'
         compile 'com.android.support:support-v4:+'
         compile 'com.android.support:support-v13:+'
         compile 'com.android.support:appcompat-v7:+'
@@ -74,5 +81,7 @@ android {
         compile 'com.squareup.picasso:picasso:+'
         compile files('libs/commons-io-2.4.jar')
         compile files('libs/commons-lang3-3.3.1.jar')
+        compile files('libs/kuromoji-core-1.0-SNAPSHOT.jar')
+        compile files('libs/kuromoji-jumandic-1.0-SNAPSHOT.jar')
     }
 }
